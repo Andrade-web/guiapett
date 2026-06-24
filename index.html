@@ -1,113 +1,360 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="bootstrap.min.css">
-    <link rel="stylesheet" href="project.css">
-    <title>Guia Pett</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulado Direito de Família e Sucessões</title>
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#f4f6f9;
+    margin:0;
+    padding:20px;
+}
+.container{
+    max-width:1000px;
+    margin:auto;
+    background:white;
+    padding:30px;
+    border-radius:10px;
+    box-shadow:0 0 15px rgba(0,0,0,.15);
+}
+h1{
+    text-align:center;
+    color:#003366;
+}
+.questao{
+    margin-bottom:25px;
+    padding:15px;
+    border-left:5px solid #003366;
+    background:#fafafa;
+}
+.alternativa{
+    margin:8px 0;
+}
+button{
+    background:#003366;
+    color:white;
+    border:none;
+    padding:15px 25px;
+    font-size:18px;
+    border-radius:8px;
+    cursor:pointer;
+}
+button:hover{
+    background:#0055aa;
+}
+#resultado{
+    margin-top:30px;
+    font-size:24px;
+    text-align:center;
+    font-weight:bold;
+}
+.acerto{
+    color:green;
+}
+.erro{
+    color:red;
+}
+</style>
 </head>
-
 <body>
-    <div class="container1">
-        <img src="HOUR.png" height="50px">
-    </div>
-    <div class="container2">
-      <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-indicators">
-          <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-          <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2"></button>
-          <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2" aria-label="Slide 3"></button>
-        </div>
-        <div class="carousel-inner">
-          <div class="carousel-item active">
-            <img src="cachorro-basenji-inteligente-e-amigavel-dando-a-pata-de-perto-isolado-no-branco.jpg" class="d-block w-100" alt="...">
-          </div>
-          <div class="carousel-item">
-            <img src="lindo-retrato-de-animal-de-estimacao-isolado.jpg" class="d-block w-100" alt="...">
-          </div>
-          <div class="carousel-item">
-            <img src="lindo-retrato-de-cachorro.jpg" class="d-block w-100" alt="...">
-          </div>
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Next</span>
-        </button>
-      </div>
-    </div>
-    <div class="container3">
-        <h1>O que Seu Amigo Peludo Pode Comer?</h1>
-        <h4>Veja aqui algumas dicas e alimentos para seu pet. </h3>
-    </div>
-    <div class="container4">
-        <p>Os <strong>cães</strong> são parte integrante de muitas famílias, conforto companheirismo, amor incondicional e alegria. Assim como nós, humanos, eles têm necessidades alimentares específicas e é fundamental oferecer uma dieta equilibrada para garantir sua saúde e bem-estar. No entanto, nem todos os alimentos destinados aos humanos são seguros para os cães. Este artigo explora uma variedade de alimentos que são seguros e até mesmo benéficos para os amigos peludos.</p>
-    </div>
-    <div class="container5">
-      <div class="row">
-          <div class="col-10">
-            <h2><strong>1 Carne magra.</strong></h2>
-            <ul>
-              <li>Carne de frango cozida, desossada e sem pele é uma excelente fonte de proteína para cães. Evite temperos e condimentos.</li>
-              <li>Carne magra de boi, carneiro e peru também são opções saudáveis quando cozidas e sem gordura excessiva.</li>
-            </ul>
-            <h2><strong>2. Vegetais:</strong></h2>
-            <ul>
-              <li>Muitos cães gostam de vegetais como cenoura, abobrinha, abóbora e brócolis. Esses alimentos fornecem fibras e nutrientes essenciais.</li>
-              <li>Evite cebolas e alho, pois podem ser tóxicos para os cães em grandes quantidades..</li>
-            </ul>
-            <h2><strong>3. Frutas:</strong></h2>
-            <ul>
-              <li>Maçãs, peras, bananas e morangos são opções seguras e saborosas. Remova sementes e caroços antes de oferecer.</li>
-              <li>Evite uvas e passas, que podem causar problemas renais.</li>
-            </ul>
-            <img src="lindo-cachorro-com-comida-nutritiva.jpg" width="100%">
-            <h2><strong>4. Grãos Integrais:</strong></h2>
-            <ul>
-              <li>Arroz cozido e aveia sem adição de açúcar são fontes de carboidratos saudáveis.</li>
-              <li>Evite alimentos com alto teor de gordura e sal, como pipoca com manteiga.</li>
-            </ul>
-            <h2><strong>5. Produtos Lácteos Moderados:</strong></h2>
-            <ul>
-              <li>Iogurte natural sem açúcar e queijo cottage em pequenas quantidades podem ser oferecidos.</li>
-              <li>Evite leite em excesso, pois muitos cães são intolerantes à lactose.</li>
-            </ul>
-            <h2><strong>6. Peixes Rica em Ômega-3:</strong></h2>
-            <ul>
-              <li>Salmão cozido ou enlatado é uma excelente fonte de ácidos graxos essenciais para a saúde da pele e do pelo.</li>
-              <li>Evite peixes crus e verifique se não há espinhas.</li>
-            </ul><h2><strong>7. Ovos Cozidos:</strong></h2>
-            <ul>
-              <li>Os ovos são ricos em proteínas. Cozinhe antes de oferecer e evite adição de temperos.</li>
-              <li>Certifique-se de que estão totalmente cozidos para evitar riscos de contaminação.</li>
-            </ul>
-          </ul><h2><strong>8. Alimentos a Evitar:</strong></h2>
-          <ul>
-            <li>Chocolate, café e alimentos com cafeína são tóxicos para cães.</li>
-            <li>Cebola, alho e alimentos ricos em gordura devem ser evitados.</li>
-            <li>Uvas, passas, abacate, frutas com caroços e alimentos com adoçantes artificiais são prejudiciais.</li>
-          </ul>
-          <h5><strong>Dicas importantes:</strong></h5>
-          <ul>
-            <li>Introduza novos <strong>alimentos</strong> gradualmente para evitar problemas digestivos.</li>
-            <li>Consulte o veterinário antes de fazer alterações significativas na dieta do seu cão.</li>
-            <li>Mantenha sempre água fresca disponível.</li>
-          </ul>
-          <p>Em conclusão, compartilhar alimentos saudáveis e seguros com seu cão pode fortalecer ainda mais o vínculo entre vocês. No entanto, é essencial estar ciente dos alimentos prejudiciais e garantir que a dieta do seu cão atenda às suas necessidades específicas. A chave é a moderação e a supervisão constante para garantir uma vida longa e saudável para o seu fiel companheiro.</p>
-        <div class="col-2">
-            
-        </div>
-        </div>
-      </div>
-    </div>
-    <footer>
-      <p>&copy; 2024 - Todos os direitos reservados</p>
-    </footer>
-<script type="text/javascript" src="jquery-3.7.1.min.js"></script>    
-<script type="text/javascript" src="bootstrap.bundle.min.js"></script>    
+<div class="container">
+<h1>Simulado - Direito de Família e Sucessões</h1>
+<form id="quiz"></form>
+<div style="text-align:center;">
+<button onclick="corrigir()">Finalizar Simulado</button>
+</div>
+<div id="resultado"></div>
+</div>
+<script>
+const questoes = [
+{
+pergunta:"1. A guarda compartilhada foi tornada regra pela:",
+opcoes:["Lei 13.146/2015","Lei 13.058/2014","Lei 12.010/2009","Lei 11.340/2006"],
+correta:1
+},
+{
+pergunta:"2. A tutela destina-se principalmente à proteção de:",
+opcoes:["Maiores incapazes","Menores sem poder familiar","Idosos","Pródigos"],
+correta:1
+},
+{
+pergunta:"3. A curatela protege:",
+opcoes:["Menores emancipados","Menores sob guarda","Maiores relativamente incapazes","Nascituros"],
+correta:2
+},
+{
+pergunta:"4. Atualmente são absolutamente incapazes:",
+opcoes:["Menores de 18 anos","Menores de 16 anos","Pródigos","Ébrios habituais"],
+correta:1
+},
+{
+pergunta:"5. A guarda unilateral é exercida por:",
+opcoes:["Ambos os pais","Um dos genitores","Juiz","Tutor"],
+correta:1
+},
+{
+pergunta:"6. A tutela testamentária é instituída por:",
+opcoes:["Juiz","MP","Ato de última vontade","Conselho Tutelar"],
+correta:2
+},
+{
+pergunta:"7. A tutela legítima segue ordem prevista no:",
+opcoes:["ECA","Constituição","Código Civil","CPC"],
+correta:2
+},
+{
+pergunta:"8. A tutela dativa é nomeada:",
+opcoes:["Pelos pais","Pelo juiz","Pelo MP","Pelo Conselho Tutelar"],
+correta:1
+},
+{
+pergunta:"9. O pródigo é considerado:",
+opcoes:["Absolutamente incapaz","Relativamente incapaz","Plenamente incapaz","Inexistente"],
+correta:1
+},
+{
+pergunta:"10. O processo de interdição está previsto no:",
+opcoes:["CP","CPP","CPC","CDC"],
+correta:2
+},
+{
+pergunta:"11. Quem pode promover a interdição?",
+opcoes:["Somente MP","Pais, tutores, cônjuge, parentes e MP","Somente juiz","Somente advogado"],
+correta:1
+},
+{
+pergunta:"12. A guarda compartilhada busca:",
+opcoes:["Interesse patrimonial","Interesse do menor","Interesse dos avós","Interesse do Estado"],
+correta:1
+},
+{
+pergunta:"13. O castigo físico foi vedado pela:",
+opcoes:["Lei da Palmada","Lei Maria da Penha","Lei do Divórcio","ECA"],
+correta:0
+},
+{
+pergunta:"14. A perda do poder familiar é medida:",
+opcoes:["Leve","Administrativa","Extrema","Automática"],
+correta:2
+},
+{
+pergunta:"15. A suspensão do poder familiar pode ser:",
+opcoes:["Irreversível","Restituída","Automática","Perpétua"],
+correta:1
+},
+{
+pergunta:"16. O tutor administra:",
+opcoes:["Somente a pessoa","Somente bens","Pessoa e bens do menor","Somente alimentos"],
+correta:2
+},
+{
+pergunta:"17. A curatela decorre normalmente de:",
+opcoes:["Adoção","Casamento","Interdição","Divórcio"],
+correta:2
+},
+{
+pergunta:"18. O testamento é ato:",
+opcoes:["Bilateral","Personalíssimo","Oneroso","Conjunto"],
+correta:1
+},
+{
+pergunta:"19. O testamento pode ser:",
+opcoes:["Irrevogável","Revogável","Condicionalmente irrevogável","Anônimo"],
+correta:1
+},
+{
+pergunta:"20. O reconhecimento de filho em testamento é:",
+opcoes:["Revogável","Nulo","Irrevogável","Anulável"],
+correta:2
+},
+{
+pergunta:"21. O testamento conjuntivo é:",
+opcoes:["Permitido","Vedado","Recomendado","Obrigatório"],
+correta:1
+},
+{
+pergunta:"22. O testamento público é lavrado por:",
+opcoes:["Advogado","Promotor","Tabelião","Juiz"],
+correta:2
+},
+{
+pergunta:"23. O testamento público exige:",
+opcoes:["2 testemunhas","1 testemunha","5 testemunhas","Nenhuma"],
+correta:0
+},
+{
+pergunta:"24. O testamento cerrado é conhecido como:",
+opcoes:["Hológrafo","Místico","Conjuntivo","Codicilo"],
+correta:1
+},
+{
+pergunta:"25. O testamento particular é também chamado:",
+opcoes:["Místico","Conjunto","Hológrafo","Especial"],
+correta:2
+},
+{
+pergunta:"26. O testamento particular deve ser lido perante:",
+opcoes:["1 testemunha","2 testemunhas","3 testemunhas","Juiz"],
+correta:2
+},
+{
+pergunta:"27. O codicilo trata de:",
+opcoes:["Grande patrimônio","Pequena monta","Empresas","Imóveis obrigatoriamente"],
+correta:1
+},
+{
+pergunta:"28. A sucessão testamentária decorre de:",
+opcoes:["Lei","Testamento","Sentença","Contrato"],
+correta:1
+},
+{
+pergunta:"29. A sucessão legítima ocorre quando:",
+opcoes:["Há testamento válido","Não há testamento","Há legado","Há codicilo"],
+correta:1
+},
+{
+pergunta:"30. A legítima corresponde a:",
+opcoes:["25%","75%","50%","100%"],
+correta:2
+},
+{
+pergunta:"31. São herdeiros necessários:",
+opcoes:["Somente filhos","Descendentes, ascendentes e cônjuge","Somente cônjuge","Primos"],
+correta:1
+},
+{
+pergunta:"32. O testador pode dispor livremente de:",
+opcoes:["Toda herança","Metade disponível","Nada","25%"],
+correta:1
+},
+{
+pergunta:"33. A ordem de vocação hereditária inicia pelos:",
+opcoes:["Colaterais","Ascendentes","Descendentes","Estado"],
+correta:2
+},
+{
+pergunta:"34. O cônjuge sobrevivente é:",
+opcoes:["Herdeiro necessário","Legatário","Tutor","Curador"],
+correta:0
+},
+{
+pergunta:"35. O STF equiparou sucessão do companheiro ao:",
+opcoes:["Namoro","Casamento","Noivado","Parentesco"],
+correta:1
+},
+{
+pergunta:"36. O art. 1.846 trata da:",
+opcoes:["Curatela","Tutela","Legítima","Guarda"],
+correta:2
+},
+{
+pergunta:"37. A revogação do testamento pode ser:",
+opcoes:["Expressa ou tácita","Somente expressa","Somente judicial","Impossível"],
+correta:0
+},
+{
+pergunta:"38. O rompimento do testamento também é chamado de:",
+opcoes:["Nulidade","Revogação ficta","Caducidade","Anulação"],
+correta:1
+},
+{
+pergunta:"39. O testamento simultâneo beneficia:",
+opcoes:["Os próprios testadores","Terceiro alheio","Estado","Filhos"],
+correta:1
+},
+{
+pergunta:"40. O testamento recíproco beneficia:",
+opcoes:["Terceiro","Ambos os testadores","MP","Juiz"],
+correta:1
+},
+{
+pergunta:"41. O testamento correspectivo envolve:",
+opcoes:["Retribuição mútua","Doação","Compra e venda","Legado estatal"],
+correta:0
+},
+{
+pergunta:"42. Os testamentos simultâneo, recíproco e correspectivo são:",
+opcoes:["Permitidos","Vedados","Obrigatórios","Especiais"],
+correta:1
+},
+{
+pergunta:"43. A tomada de decisão apoiada foi fortalecida pelo:",
+opcoes:["ECA","EPD","CDC","CPP"],
+correta:1
+},
+{
+pergunta:"44. Pessoas com deficiência são consideradas:",
+opcoes:["Absolutamente incapazes","Relativamente incapazes","Plenamente capazes","Sempre interditadas"],
+correta:2
+},
+{
+pergunta:"45. A guarda pode ser:",
+opcoes:["Unilateral ou compartilhada","Somente compartilhada","Somente unilateral","Alternada obrigatória"],
+correta:0
+},
+{
+pergunta:"46. O tutor deve ser:",
+opcoes:["Menor","Capaz","Parente obrigatório","Casado"],
+correta:1
+},
+{
+pergunta:"47. O menor de 17 anos pode testar?",
+opcoes:["Não","Sim","Somente com autorização judicial","Somente casado"],
+correta:1
+},
+{
+pergunta:"48. O menor de 15 anos pode testar?",
+opcoes:["Sim","Não","Somente assistido","Somente por escritura"],
+correta:1
+},
+{
+pergunta:"49. O poder familiar extingue-se pela:",
+opcoes:["Maioridade","Emancipação","Morte","Todas as alternativas"],
+correta:3
+},
+{
+pergunta:"50. A principal finalidade da guarda é:",
+opcoes:["Proteção da pessoa do filho","Gestão empresarial","Administração estatal","Cobrança de alimentos"],
+correta:0
+}
+];
+const quiz = document.getElementById("quiz");
+questoes.forEach((q,i)=>{
+let html = `
+<div class="questao">
+<p><strong>${q.pergunta}</strong></p>
+`;
+q.opcoes.forEach((op,j)=>{
+html += `
+<div class="alternativa">
+<label>
+<input type="radio" name="q${i}" value="${j}">
+${op}
+</label>
+</div>`;
+});
+html += "</div>";
+quiz.innerHTML += html;
+});
+function corrigir(){
+let acertos=0;
+questoes.forEach((q,i)=>{
+let resposta=document.querySelector(`input[name="q${i}"]:checked`);
+if(resposta && parseInt(resposta.value)===q.correta){
+acertos++;
+}
+});
+let porcentagem=((acertos/50)*100).toFixed(0);
+document.getElementById("resultado").innerHTML=
+`
+<p>Você acertou ${acertos} de 50 questões.</p>
+<p>Aproveitamento: ${porcentagem}%</p>
+<button onclick="location.reload()">Refazer Simulado</button>
+`;
+window.scrollTo(0,document.body.scrollHeight);
+}
+</script>
 </body>
 </html>
