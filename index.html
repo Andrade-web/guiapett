@@ -1,3 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulado Direito de Família e Sucessões</title>
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#f4f6f9;
+    margin:0;
+    padding:20px;
+}
+.container{
+    max-width:1000px;
+    margin:auto;
+    background:white;
+    padding:30px;
+    border-radius:10px;
+    box-shadow:0 0 15px rgba(0,0,0,.15);
+}
+h1{
+    text-align:center;
+    color:#003366;
+}
+.questao{
+    margin-bottom:25px;
+    padding:15px;
+    border-left:5px solid #003366;
+    background:#fafafa;
+}
+.alternativa{
+    margin:8px 0;
+}
+button{
+    background:#003366;
+    color:white;
+    border:none;
+    padding:15px 25px;
+    font-size:18px;
+    border-radius:8px;
+    cursor:pointer;
+}
+button:hover{
+    background:#0055aa;
+}
+#resultado{
+    margin-top:30px;
+    font-size:24px;
+    text-align:center;
+    font-weight:bold;
+}
+.acerto{
+    color:green;
+}
+.erro{
+    color:red;
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Simulado - Direito de Família e Sucessões</h1>
+<form id="quiz"></form>
+<div style="text-align:center;">
+<button onclick="corrigir()">Finalizar Simulado</button>
+</div>
+<div id="resultado"></div>
+</div>
 <script>
 const questoes = [
 {
@@ -325,3 +394,6 @@ function corrigir() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
+    
+</body>
+</html>
