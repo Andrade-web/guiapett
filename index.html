@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rifa Digital Multi-Vendedor (Tempo Real)</title>
-   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- CDN Atualizado e Estável do Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -432,14 +433,21 @@
     </div>
 
     <script>
-        // --- COLOQUE AS SUAS CREDENCIAIS DO SUPABASE AQUI ---
+        // --- CREDENCIAIS DO SUPABASE ---
         const SUPABASE_URL = "https://cnykqvqbujozzodmcxno.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_onW00z5AkVEJ9hnv8L9iQw_KD6GUd5I";
 
         const TOTAL_NUMEROS = 5000;
         const SENHA_CANCELAMENTO = "1234";
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let supabase = null;
+
+        // Inicializa o cliente do Supabase de forma segura
+        if (window.supabase) {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } else {
+            console.error("A biblioteca do Supabase não pôde ser carregada.");
+        }
 
         const grid = document.getElementById('grid');
         const buscaInput = document.getElementById('busca');
@@ -465,19 +473,34 @@
         // --- SISTEMA EM TEMPO REAL ---
         async function conectarAoBanco() {
             try {
+                if (!supabase) throw new Error("Cliente do Supabase não inicializado.");
+
+                // 1. Tenta buscar os dados iniciais do banco
                 const { data, error } = await supabase.from('rifas').select('*');
-                if (error) throw error;
+                
+                if (error) {
+                    console.warn("Erro ao buscar dados do Supabase. Renderizando grade vazia localmente.", error);
+                    renderizarRifa();
+                    atualizarEstatisticasERanking();
+                    connDot.className = "conn-dot";
+                    connText.textContent = "Offline (Local)";
+                    return;
+                }
 
-                data.forEach(item => {
-                    rifaDados[item.numero] = item.comprador;
-                });
+                if (data) {
+                    data.forEach(item => {
+                        rifaDados[item.numero] = item.comprador;
+                    });
+                }
 
+                // Renderiza a grade completa com os dados iniciais
                 renderizarRifa();
                 atualizarEstatisticasERanking();
 
                 connDot.className = "conn-dot online";
                 connText.textContent = "Online";
 
+                // 2. Conecta ao Realtime
                 supabase
                     .channel('changes_rifa')
                     .on('postgres_changes', { event: '*', schema: 'public', table: 'rifas' }, payload => {
@@ -486,13 +509,16 @@
                     .subscribe();
 
             } catch (err) {
-                console.error("Erro de conexão:", err);
+                console.error("Erro crítico na conexão:", err);
+                // Força renderização para o app não ficar travado em tela branca
+                renderizarRifa();
+                atualizarEstatisticasERanking();
                 connDot.className = "conn-dot";
                 connText.textContent = "Erro de conexão";
-                alert("Erro ao conectar ao banco de dados na nuvem. Verifique suas chaves.");
             }
         }
 
+        // Processa atualizações em tempo real
         function processarMudancaDoBanco(payload) {
             const { eventType, new: novoItem, old: itemAntigo } = payload;
 
@@ -506,12 +532,11 @@
             atualizarEstatisticasERanking();
         }
 
-        // --- INTERFACE E PERFORMANCE (Renderização Otimizada) ---
+        // --- INTERFACE E PERFORMANCE ---
         function renderizarRifa() {
             grid.innerHTML = '';
             const fragment = document.createDocumentFragment();
             
-            // Chunk rendering de 500 em 500 elementos usando requestAnimationFrame
             let i = 1;
             function renderChunk() {
                 const limite = Math.min(i + 500, TOTAL_NUMEROS + 1);
@@ -635,6 +660,10 @@
 
                 if (senhaDigitada === SENHA_CANCELAMENTO) {
                     if (confirm(`Deseja realmente liberar o número ${formatado}?`)) {
+                        if (!supabase) {
+                            alert("Sem conexão ativa com o Supabase.");
+                            return;
+                        }
                         const { error } = await supabase.from('rifas').delete().eq('numero', numero);
                         if (error) {
                             alert("Erro ao excluir no banco de dados.");
@@ -648,6 +677,10 @@
                 if (nome && nome.trim() !== "") {
                     const nomeFinal = nome.trim();
                     if (confirm(`Confirmar venda do ${formatado} para "${nomeFinal}"?`)) {
+                        if (!supabase) {
+                            alert("Sem conexão ativa com o Supabase.");
+                            return;
+                        }
                         const { error } = await supabase.from('rifas').insert([{ numero: numero, comprador: nomeFinal }]);
                         if (error) {
                             alert("Este número já pode ter sido comprado por outra pessoa agora mesmo! Recarregando...");
@@ -708,6 +741,10 @@
                         comprador: nomeFinal
                     }));
 
+                    if (!supabase) {
+                        alert("Sem conexão ativa com o Supabase.");
+                        return;
+                    }
                     const { error } = await supabase.from('rifas').insert(inserts);
                     
                     if (error) {
@@ -737,8 +774,15 @@
             }
         });
 
-        // Iniciar
-        conectarAoBanco();
+        // Iniciar somente após o carregamento completo do DOM
+        window.addEventListener('DOMContentLoaded', () => {
+            if (supabase) {
+                conectarAoBanco();
+            } else {
+                renderizarRifa();
+                atualizarEstatisticasERanking();
+            }
+        });
     </script>
 </body>
 </html>
