@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rifa Digital - 5000 Números</title>
+    <title>Rifa Digital Premium - 5000 Números</title>
     <style>
         * {
             box-sizing: border-box;
@@ -13,24 +13,40 @@
         }
 
         body {
-            background-color: #f4f6f9;
-            color: #333;
+            background-color: #f0f3f8;
+            color: #2c3e50;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
         }
 
         header {
             text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            padding: 25px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            width: 100%;
         }
 
         header h1 {
-            color: #2c3e50;
-            font-size: 2rem;
+            color: #1a252f;
+            font-size: 2.2rem;
             margin-bottom: 10px;
+        }
+
+        /* Configurações de Senha */
+        .password-info {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-top: 5px;
         }
 
         /* Painel de Estatísticas */
@@ -43,51 +59,59 @@
         }
 
         .stat-box {
-            background: #eef2f7;
-            padding: 10px 20px;
-            border-radius: 8px;
+            background: #f8fafc;
+            padding: 12px 24px;
+            border-radius: 10px;
             font-weight: bold;
-            font-size: 0.95rem;
+            font-size: 1rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
         }
 
-        .stat-box.disponivel { color: #2ecc71; }
-        .stat-box.vendido { color: #e74c3c; }
+        .stat-box.disponivel { color: #27ae60; border-left: 4px solid #2ecc71; }
+        .stat-box.vendido { color: #e74c3c; border-left: 4px solid #e74c3c; }
+
+        /* Layout Principal: Grid de Números + Lateral do Ranking */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 20px;
+            width: 100%;
+            align-items: start;
+        }
 
         /* Barra de Busca rápida */
         .search-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+            width: 100%;
         }
 
         .search-container input {
             width: 100%;
-            max-width: 400px;
-            padding: 12px 20px;
-            border: 2px solid #ddd;
-            border-radius: 25px;
+            padding: 14px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 30px;
             font-size: 1rem;
             outline: none;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
         }
 
         .search-container input:focus {
             border-color: #3498db;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
         }
 
         /* Grid de Números */
         .rifa-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
-            gap: 8px;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 10px;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            max-height: 65vh;
-            overflow-y: auto; /* Scroll interno para não travar a página */
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            max-height: 70vh;
+            overflow-y: auto;
         }
 
         /* Estilo de cada número (card) */
@@ -97,95 +121,238 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-radius: 8px;
-            border: 2px solid #e0e0e0;
-            background-color: #fdfdfd;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            background-color: #ffffff;
             cursor: pointer;
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 1.05rem;
             transition: all 0.2s ease;
             user-select: none;
-            padding: 5px;
+            padding: 6px;
         }
 
         .numero-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+            border-color: #3498db;
         }
 
         /* Estado: Disponível */
         .numero-card.disponivel {
             color: #2c3e50;
-            border-color: #bdc3c7;
         }
 
         /* Estado: Vendido */
         .numero-card.vendido {
             background-color: #e74c3c;
-            color: #fff;
-            border-color: #c0392b;
+            color: #ffffff;
+            border-color: #e74c3c;
         }
 
         .numero-card .nome-comprador {
             font-size: 0.65rem;
-            font-weight: normal;
-            margin-top: 4px;
+            font-weight: 500;
+            margin-top: 5px;
             text-align: center;
             max-width: 100%;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Painel Lateral do Ranking */
+        .ranking-panel {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 20px;
+        }
+
+        .ranking-panel h2 {
+            font-size: 1.3rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px solid #f0f3f8;
+            padding-bottom: 10px;
+        }
+
+        .ranking-lista {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        .ranking-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .ranking-item:hover {
+            background: #edf2f7;
+        }
+
+        .ranking-item .posicao {
+            font-weight: bold;
+            color: #7f8c8d;
+            margin-right: 6px;
+        }
+
+        .ranking-item.top-1 .posicao { color: #f1c40f; } /* Ouro */
+        .ranking-item.top-2 .posicao { color: #95a5a6; } /* Prata */
+        .ranking-item.top-3 .posicao { color: #d35400; } /* Bronze */
+
+        .ranking-item .nome {
+            font-weight: 600;
+            color: #2c3e50;
+            flex-grow: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-right: 10px;
+        }
+
+        .ranking-item .qtd-badge {
+            background: #3498db;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .sem-dados {
+            text-align: center;
+            color: #95a5a6;
+            font-size: 0.9rem;
+            padding: 20px 0;
         }
 
         /* Responsividade */
+        @media (max-width: 900px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            .ranking-panel {
+                position: static;
+                order: -1; /* Mostra o ranking acima do grid no mobile */
+            }
+        }
+
         @media (max-width: 600px) {
             body { padding: 10px; }
-            header h1 { font-size: 1.5rem; }
-            .rifa-grid { grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); }
+            header h1 { font-size: 1.6rem; }
+            .rifa-grid { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); padding: 10px; }
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Rifa Digital - Controler de Vendas</h1>
-        <div class="stats">
-            <div class="stat-box disponivel">Disponíveis: <span id="qtd-disponivel">5000</span></div>
-            <div class="stat-box vendido">Vendidos: <span id="qtd-vendidos">0</span></div>
+    <div class="container">
+        <header>
+            <h1>Rifa Digital - 5000 Números</h1>
+            <div class="stats">
+                <div class="stat-box disponivel">Disponíveis: <span id="qtd-disponivel">5000</span></div>
+                <div class="stat-box vendido">Vendidos: <span id="qtd-vendidos">0</span></div>
+            </div>
+            <p class="password-info">🔒 Senha padrão de cancelamento: <strong>1234</strong> (ajustável no código)</p>
+        </header>
+
+        <div class="main-layout">
+            <div>
+                <div class="search-container">
+                    <input type="number" id="busca" placeholder="Buscar número específico (ex: 2540)..." min="1" max="5000">
+                </div>
+                <div class="rifa-grid" id="grid"></div>
+            </div>
+
+            <aside class="ranking-panel">
+                <h2>🏆 Ranking de Compradores</h2>
+                <ul class="ranking-lista" id="ranking-lista">
+                    <li class="sem-dados">Nenhuma venda registrada ainda.</li>
+                </ul>
+            </aside>
         </div>
-    </header>
-
-    <div class="search-container">
-        <input type="number" id="busca" placeholder="Buscar número específico (ex: 1542)..." min="1" max="5000">
     </div>
-
-    <div class="rifa-grid" id="grid"></div>
 
     <script>
         const TOTAL_NUMEROS = 5000;
+        const SENHA_CANCELAMENTO = "1234"; // Defina aqui a sua senha secreta de administrador
+        
         const grid = document.getElementById('grid');
         const buscaInput = document.getElementById('busca');
         const qtdDisponivelSpan = document.getElementById('qtd-disponivel');
         const qtdVendidosSpan = document.getElementById('qtd-vendidos');
+        const rankingLista = document.getElementById('ranking-lista');
 
-        // Carrega dados salvos no navegador ou inicia um objeto vazio
+        // Carrega dados salvos no localStorage
         let rifaDados = JSON.parse(localStorage.getItem('rifa_5000_dados')) || {};
 
-        // Formata o número com zeros à esquerda (ex: 0005, 0422, 4999)
+        // Formata com zeros à esquerda
         function formatarNumero(num) {
             return String(num).padStart(4, '0');
         }
 
-        // Atualiza o painel de estatísticas no topo
-        function atualizarEstatisticas() {
-            const totalVendidos = Object.keys(rifaDados).length;
+        // Atualiza estatísticas e reconstrói o ranking de compradores
+        function atualizarEstatisticasERanking() {
+            const vendidosArray = Object.values(rifaDados);
+            const totalVendidos = vendidosArray.length;
             const totalDisponiveis = TOTAL_NUMEROS - totalVendidos;
             
             qtdVendidosSpan.textContent = totalVendidos;
             qtdDisponivelSpan.textContent = totalDisponiveis;
+
+            // Calcula contagem para o ranking
+            const contagem = {};
+            vendidosArray.forEach(nome => {
+                contagem[nome] = (contagem[nome] || 0) + 1;
+            });
+
+            // Ordena o ranking pelo maior número de compras
+            const rankingOrdenado = Object.entries(contagem).sort((a, b) => b[1] - a[1]);
+
+            // Renderiza o ranking na lateral
+            rankingLista.innerHTML = '';
+            if (rankingOrdenado.length === 0) {
+                rankingLista.innerHTML = '<li class="sem-dados">Nenhuma venda registrada ainda.</li>';
+            } else {
+                rankingOrdenado.forEach(([nome, qtd], index) => {
+                    const item = document.createElement('li');
+                    let topClass = '';
+                    if (index === 0) topClass = 'top-1';
+                    else if (index === 1) topClass = 'top-2';
+                    else if (index === 2) topClass = 'top-3';
+
+                    item.className = `ranking-item ${topClass}`;
+                    item.innerHTML = `
+                        <div>
+                            <span class="posicao">${index + 1}°</span>
+                            <span class="nome" title="${nome}">${nome}</span>
+                        </div>
+                        <span class="qtd-badge">${qtd} ${qtd === 1 ? 'nº' : 'nºs'}</span>
+                    `;
+                    rankingLista.appendChild(item);
+                });
+            }
         }
 
-        // Renderiza/Gera os 5000 números de forma extremamente otimizada
+        // Renderiza o painel inicial de 5000 números
         function renderizarRifa() {
             const fragment = document.createDocumentFragment();
             
@@ -195,7 +362,6 @@
                 card.className = 'numero-card';
                 card.id = `num-${i}`;
                 
-                // Verifica se já está vendido
                 if (rifaDados[i]) {
                     card.classList.add('vendido');
                     card.innerHTML = `
@@ -207,32 +373,37 @@
                     card.innerHTML = `<span>${numeroFormatado}</span>`;
                 }
 
-                // Evento de clique para marcar/desmarcar
                 card.addEventListener('click', () => gerenciarClique(i, numeroFormatado));
-                
                 fragment.appendChild(card);
             }
             
             grid.appendChild(fragment);
-            atualizarEstatisticas();
+            atualizarEstatisticasERanking();
         }
 
-        // Lógica de marcação e confirmação
+        // Fluxo de marcação, confirmação e cancelamento com senha
         function gerenciarClique(numero, formatado) {
             const jaVendido = rifaDados[numero];
 
             if (jaVendido) {
-                // Caso já esteja marcado, permite desmarcar/liberar o número
-                const confirmarLiberacao = confirm(`O número ${formatado} está marcado para "${jaVendido}". Deseja liberar este número e torná-lo disponível novamente?`);
-                if (confirmarLiberacao) {
-                    delete rifaDados[numero];
-                    salvarEAtualizarInterface(numero, formatado, false);
+                // EXIGE SENHA PARA CANCELAR
+                const senhaDigitada = prompt(`O número ${formatado} está reservado para "${jaVendido}".\nPara CANCELAR esta venda e liberar o número, digite a senha de administrador:`);
+                
+                if (senhaDigitada === null) return; // Usuário cancelou o prompt
+
+                if (senhaDigitada === SENHA_CANCELAMENTO) {
+                    const confirmarLiberacao = confirm(`Senha confirmada! Deseja realmente tornar o número ${formatado} disponível novamente?`);
+                    if (confirmarLiberacao) {
+                        delete rifaDados[numero];
+                        salvarEAtualizarInterface(numero, formatado, false);
+                    }
+                } else {
+                    alert("⚠️ Senha incorreta! O cancelamento foi abortado.");
                 }
             } else {
-                // Caso esteja livre, pergunta o nome do comprador
+                // Fluxo de venda normal
                 const nome = prompt(`Digite o nome de quem está comprando o número ${formatado}:`);
                 
-                // Se o usuário digitou algo e não cancelou o prompt
                 if (nome && nome.trim() !== "") {
                     const confirmarVenda = confirm(`Confirmar a venda do número ${formatado} para "${nome.trim()}"?`);
                     if (confirmarVenda) {
@@ -245,7 +416,7 @@
             }
         }
 
-        // Atualiza o estado visual do botão clicado e salva no localStorage
+        // Salva dados no LocalStorage e atualiza a interface imediatamente
         function salvarEAtualizarInterface(numero, formatado, isVendido, nome = "") {
             localStorage.setItem('rifa_5000_dados', JSON.stringify(rifaDados));
             const card = document.getElementById(`num-${numero}`);
@@ -260,26 +431,28 @@
                 card.className = 'numero-card disponível';
                 card.innerHTML = `<span>${formatado}</span>`;
             }
-            atualizarEstatisticas();
+            atualizarEstatisticasERanking();
         }
 
-        // Sistema de busca e scroll suave até o número digitado
+        // Sistema de busca rápida com scroll suave
         buscaInput.addEventListener('input', (e) => {
             const buscaValor = parseInt(e.target.value);
             if (buscaValor >= 1 && buscaValor <= TOTAL_NUMEROS) {
                 const elementoAlvo = document.getElementById(`num-${buscaValor}`);
                 if (elementoAlvo) {
                     elementoAlvo.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    // Destaque visual temporário piscando o elemento procurado
+                    
                     elementoAlvo.style.outline = '4px solid #3498db';
+                    elementoAlvo.style.zIndex = '10';
                     setTimeout(() => {
                         elementoAlvo.style.outline = 'none';
+                        elementoAlvo.style.zIndex = 'auto';
                     }, 2000);
                 }
             }
         });
 
-        // Inicializa a aplicação
+        // Inicializa
         renderizarRifa();
     </script>
 </body>
