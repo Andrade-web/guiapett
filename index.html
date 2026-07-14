@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rifa Digital Pro - 5000 Números</title>
+    <title>Rifa Digital Multi-Vendedor (Tempo Real)</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -34,6 +35,7 @@
             border-radius: 16px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.05);
             width: 100%;
+            position: relative;
         }
 
         header h1 {
@@ -41,6 +43,28 @@
             font-size: 2.2rem;
             margin-bottom: 8px;
         }
+
+        /* Status da Conexão */
+        .conn-status {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f1f5f9;
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+        .conn-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e74c3c;
+        }
+        .conn-dot.online { background: #2ecc71; }
 
         .password-info {
             font-size: 0.85rem;
@@ -69,7 +93,7 @@
         .stat-box.disponivel { color: #27ae60; border-left: 4px solid #2ecc71; }
         .stat-box.vendido { color: #e74c3c; border-left: 4px solid #e74c3c; }
 
-        /* Painel de Controlos (Busca, Filtros, Backups e Seleção) */
+        /* Painel de Controlos */
         .controls-panel {
             background: #ffffff;
             border-radius: 16px;
@@ -136,7 +160,7 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.08);
         }
 
-        /* Botões Gerais */
+        /* Botões */
         .btn {
             padding: 10px 18px;
             border: none;
@@ -152,21 +176,12 @@
 
         .btn-primary { background-color: #3498db; color: white; }
         .btn-primary:hover { background-color: #2980b9; }
-        
-        .btn-secondary { background-color: #94a3b8; color: white; }
-        .btn-secondary:hover { background-color: #64748b; }
-
-        .btn-success { background-color: #2ecc71; color: white; }
-        .btn-success:hover { background-color: #27ae60; }
 
         .btn-danger { background-color: #e74c3c; color: white; }
         .btn-danger:hover { background-color: #c0392b; }
 
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+        .btn-success { background-color: #2ecc71; color: white; }
+        .btn-success:hover { background-color: #27ae60; }
 
         /* Layout de Visualização */
         .main-layout {
@@ -190,11 +205,11 @@
             overflow-y: auto;
         }
 
-        /* Filtros CSS Rápidos (Escondem elementos instantaneamente sem lag) */
+        /* Filtros CSS */
         .rifa-grid.filter-disponiveis .numero-card.vendido { display: none !important; }
         .rifa-grid.filter-vendidos .numero-card.disponivel { display: none !important; }
 
-        /* Estilo do Card */
+        /* Card */
         .numero-card {
             aspect-ratio: 1;
             display: flex;
@@ -226,7 +241,7 @@
             border-color: #e74c3c;
         }
 
-        /* Estado Selecionado (Carrinho de Compra Múltipla) */
+        /* Selecionado */
         .numero-card.selecionado {
             background-color: #f1c40f !important;
             border-color: #f39c12 !important;
@@ -362,7 +377,11 @@
 
     <div class="container">
         <header>
-            <h1>Rifa Digital Pro</h1>
+            <h1>Rifa Digital Multiusuário</h1>
+            <div class="conn-status">
+                <div id="conn-dot" class="conn-dot"></div>
+                <span id="conn-text">Conectando...</span>
+            </div>
             <div class="stats">
                 <div class="stat-box disponivel">Disponíveis: <span id="qtd-disponivel">5000</span></div>
                 <div class="stat-box vendido">Vendidos: <span id="qtd-vendidos">0</span></div>
@@ -383,13 +402,7 @@
                 </div>
             </div>
 
-            <div class="controls-row">
-                <div class="btn-group">
-                    <button class="btn btn-secondary" onclick="exportarBackup()">📥 Exportar Backup</button>
-                    <button class="btn btn-secondary" onclick="document.getElementById('file-import').click()">📤 Importar Backup</button>
-                    <input type="file" id="file-import" accept=".json" style="display: none;" onchange="importarBackup(this)">
-                </div>
-
+            <div class="controls-row" style="justify-content: flex-end;">
                 <div>
                     <button id="btn-modo-selecao" class="btn btn-primary" onclick="toggleModoSelecao()">🛒 Ativar Seleção Múltipla</button>
                 </div>
@@ -399,7 +412,7 @@
                 <span style="font-weight: 600; color: #854d0e;">
                     🛒 Modo Seleção Ativo: <span id="contador-selecao">0</span> número(s) escolhido(s).
                 </span>
-                <div class="btn-group">
+                <div class="btn-group" style="display: flex; gap: 10px;">
                     <button class="btn btn-success" onclick="confirmarVendaMultipla()">Confirmar Compra</button>
                     <button class="btn btn-danger" onclick="toggleModoSelecao()">Cancelar</button>
                 </div>
@@ -412,87 +425,184 @@
             <aside class="ranking-panel">
                 <h2>🏆 Ranking de Compradores</h2>
                 <ul class="ranking-lista" id="ranking-lista">
-                    <li class="sem-dados">Nenhuma venda registada ainda.</li>
+                    <li class="sem-dados">Buscando banco de dados...</li>
                 </ul>
             </aside>
         </div>
     </div>
 
     <script>
+        // --- COLOQUE AS SUAS CREDENCIAIS DO SUPABASE AQUI ---
+        const SUPABASE_URL = "https://cnykqvqbujozzodmcxno.supabase.co/rest/v1/";
+        const SUPABASE_ANON_KEY = "SUA_CHAVE_ANON_PUBLIC";
+
         const TOTAL_NUMEROS = 5000;
-        const SENHA_CANCELAMENTO = "1234"; // Altere aqui a sua senha de segurança
+        const SENHA_CANCELAMENTO = "1234"; // Altere sua senha se desejar
+
+        // Inicializa o cliente do Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const grid = document.getElementById('grid');
         const buscaInput = document.getElementById('busca');
         const qtdDisponivelSpan = document.getElementById('qtd-disponivel');
         const qtdVendidosSpan = document.getElementById('qtd-vendidos');
         const rankingLista = document.getElementById('ranking-lista');
+        const connDot = document.getElementById('conn-dot');
+        const connText = document.getElementById('conn-text');
         
-        // Elementos do Modo Carrinho
         const selectionBar = document.getElementById('selection-bar');
         const btnModoSelecao = document.getElementById('btn-modo-selecao');
         const contadorSelecao = document.getElementById('contador-selecao');
 
         // Estados Globais
-        let rifaDados = JSON.parse(localStorage.getItem('rifa_5000_dados')) || {};
+        let rifaDados = {}; // Sincronizado dinamicamente com o banco de dados
         let modoSelecaoAtivo = false;
-        let carrinhoNumeros = new Set(); // Guarda números temporariamente selecionados
+        let carrinhoNumeros = new Set();
 
         function formatarNumero(num) {
             return String(num).padStart(4, '0');
         }
 
-        // --- MELHORIA 1: EXPORTAR E IMPORTAR BACKUP (JSON) ---
-        function exportarBackup() {
-            if (Object.keys(rifaDados).length === 0) {
-                alert("Não existem dados de vendas para exportar.");
-                return;
+        // --- SISTEMA EM TEMPO REAL ---
+        async function conectarAoBanco() {
+            try {
+                // 1. Puxa os dados iniciais do banco
+                const { data, error } = await supabase.from('rifas').select('*');
+                if (error) throw error;
+
+                // Converte array do banco para o objeto que usamos localmente
+                data.forEach(item => {
+                    rifaDados[item.numero] = item.comprador;
+                });
+
+                // Renderiza a grade completa com os dados iniciais
+                renderizarRifa();
+                atualizarEstatisticasERanking();
+
+                // Avisa que está online
+                connDot.className = "conn-dot online";
+                connText.textContent = "Online";
+
+                // 2. Cria conexão em tempo real (Escuta inserts e deletes no banco)
+                supabase
+                    .channel('changes_rifa')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'rifas' }, payload => {
+                        processarMudancaDoBanco(payload);
+                    })
+                    .subscribe();
+
+            } catch (err) {
+                console.error("Erro de conexão:", err);
+                connDot.className = "conn-dot";
+                connText.textContent = "Erro de conexão";
+                alert("Erro ao conectar ao banco de dados na nuvem. Verifique suas chaves.");
             }
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(rifaDados, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `backup_rifa5000_${new Date().toISOString().slice(0,10)}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
         }
 
-        function importarBackup(input) {
-            const file = input.files[0];
-            if (!file) return;
+        // Processa as atualizações que vêm da nuvem em tempo real
+        function processarMudancaDoBanco(payload) {
+            const { eventType, new: novoItem, old: itemAntigo } = payload;
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const dadosImportados = JSON.parse(e.target.result);
-                    if (typeof dadosImportados === 'object' && dadosImportados !== null) {
-                        if (confirm("⚠️ ATENÇÃO: Isto irá substituir permanentemente todas as suas vendas atuais por esta cópia de segurança. Deseja continuar?")) {
-                            rifaDados = dadosImportados;
-                            localStorage.setItem('rifa_5000_dados', JSON.stringify(rifaDados));
-                            
-                            // Força a remontagem limpa da grid
-                            grid.innerHTML = '';
-                            renderizarRifa();
-                            alert("Backup importado com sucesso!");
-                        }
-                    } else {
-                        alert("Ficheiro inválido ou corrompido.");
-                    }
-                } catch (err) {
-                    alert("Erro ao ler o ficheiro. Certifique-se de que é um ficheiro .json de backup válido.");
+            if (eventType === 'INSERT') {
+                rifaDados[novoItem.numero] = novoItem.comprador;
+                atualizarCardGraficamente(novoItem.numero, true, novoItem.comprador);
+            } else if (eventType === 'DELETE') {
+                delete rifaDados[itemAntigo.numero];
+                atualizarCardGraficamente(itemAntigo.numero, false);
+            }
+            atualizarEstatisticasERanking();
+        }
+
+        // --- INTERFACE E PERFORMANCE ---
+        function renderizarRifa() {
+            grid.innerHTML = '';
+            const fragment = document.createDocumentFragment();
+            
+            for (let i = 1; i <= TOTAL_NUMEROS; i++) {
+                const numeroFormatado = formatarNumero(i);
+                const card = document.createElement('div');
+                card.className = 'numero-card';
+                card.id = `num-${i}`;
+                
+                if (rifaDados[i]) {
+                    card.classList.add('vendido');
+                    card.innerHTML = `
+                        <span>${numeroFormatado}</span>
+                        <span class="nome-comprador" title="${rifaDados[i]}">${rifaDados[i]}</span>
+                    `;
+                } else {
+                    card.classList.add('disponivel');
+                    card.innerHTML = `<span>${numeroFormatado}</span>`;
                 }
-            };
-            reader.readAsText(file);
-            input.value = ''; // Reseta input para aceitar o mesmo ficheiro no futuro
+
+                card.addEventListener('click', () => gerenciarClique(i, numeroFormatado, card));
+                fragment.appendChild(card);
+            }
+            
+            grid.appendChild(fragment);
         }
 
-        // --- MELHORIA 2: FILTRAGEM ULTRA-RÁPIDA (CSS) ---
+        function atualizarCardGraficamente(numero, isVendido, nome = "") {
+            const card = document.getElementById(`num-${numero}`);
+            if (!card) return;
+
+            const formatado = formatarNumero(numero);
+            if (isVendido) {
+                card.className = 'numero-card vendido';
+                card.innerHTML = `
+                    <span>${formatado}</span>
+                    <span class="nome-comprador" title="${nome}">${nome}</span>
+                `;
+            } else {
+                card.className = 'numero-card disponivel';
+                card.innerHTML = `<span>${formatado}</span>`;
+            }
+        }
+
+        function atualizarEstatisticasERanking() {
+            const vendidosArray = Object.values(rifaDados);
+            const totalVendidos = vendidosArray.length;
+            const totalDisponiveis = TOTAL_NUMEROS - totalVendidos;
+            
+            qtdVendidosSpan.textContent = totalVendidos;
+            qtdDisponivelSpan.textContent = totalDisponiveis;
+
+            const contagem = {};
+            vendidosArray.forEach(nome => {
+                contagem[nome] = (contagem[nome] || 0) + 1;
+            });
+
+            const rankingOrdenado = Object.entries(contagem).sort((a, b) => b[1] - a[1]);
+
+            rankingLista.innerHTML = '';
+            if (rankingOrdenado.length === 0) {
+                rankingLista.innerHTML = '<li class="sem-dados">Nenhuma venda registrada ainda.</li>';
+            } else {
+                rankingOrdenado.forEach(([nome, qtd], index) => {
+                    const item = document.createElement('li');
+                    let topClass = '';
+                    if (index === 0) topClass = 'top-1';
+                    else if (index === 1) topClass = 'top-2';
+                    else if (index === 2) topClass = 'top-3';
+
+                    item.className = `ranking-item ${topClass}`;
+                    item.innerHTML = `
+                        <div>
+                            <span class="posicao">${index + 1}°</span>
+                            <span class="nome" title="${nome}">${nome}</span>
+                        </div>
+                        <span class="qtd-badge">${qtd} ${qtd === 1 ? 'nº' : 'nºs'}</span>
+                    `;
+                    rankingLista.appendChild(item);
+                });
+            }
+        }
+
+        // --- FILTRAGEM ---
         function filtrarGrid(filtro, elementoBotao) {
-            // Remove classe ativa de todos os botões do grupo
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             elementoBotao.classList.add('active');
 
-            // Aplica filtro no container através de classes CSS rápidas
             grid.className = 'rifa-grid';
             if (filtro === 'disponiveis') {
                 grid.classList.add('filter-disponiveis');
@@ -501,7 +611,50 @@
             }
         }
 
-        // --- MELHORIA 3: MODO SELEÇÃO MÚLTIPLA ---
+        // --- COMPRA E CANCELAMENTO INDIVIDUAL ---
+        async function gerenciarClique(numero, formatado, card) {
+            const jaVendido = rifaDados[numero];
+
+            if (modoSelecaoAtivo) {
+                if (jaVendido) {
+                    alert("Este número já está vendido.");
+                    return;
+                }
+                toggleNumeroNoCarrinho(numero, card);
+                return;
+            }
+
+            if (jaVendido) {
+                const senhaDigitada = prompt(`O número ${formatado} está reservado para "${jaVendido}".\nPara CANCELAR esta venda, digite a senha:`);
+                if (senhaDigitada === null) return; 
+
+                if (senhaDigitada === SENHA_CANCELAMENTO) {
+                    if (confirm(`Deseja realmente liberar o número ${formatado}?`)) {
+                        // Exclui do Supabase
+                        const { error } = await supabase.from('rifas').delete().eq('numero', numero);
+                        if (error) {
+                            alert("Erro ao excluir no banco de dados.");
+                        }
+                    }
+                } else {
+                    alert("⚠️ Senha incorreta!");
+                }
+            } else {
+                const nome = prompt(`Digite o nome do comprador do número ${formatado}:`);
+                if (nome && nome.trim() !== "") {
+                    const nomeFinal = nome.trim();
+                    if (confirm(`Confirmar venda do ${formatado} para "${nomeFinal}"?`)) {
+                        // Insere no Supabase
+                        const { error } = await supabase.from('rifas').insert([{ numero: numero, comprador: nomeFinal }]);
+                        if (error) {
+                            alert("Este número já pode ter sido comprado por outra pessoa agora mesmo! Recarregando...");
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- SELEÇÃO MÚLTIPLA ---
         function toggleModoSelecao() {
             modoSelecaoAtivo = !modoSelecaoAtivo;
             limparCarrinho();
@@ -537,185 +690,42 @@
             contadorSelecao.textContent = '0';
         }
 
-        function confirmarVendaMultipla() {
+        async function confirmarVendaMultipla() {
             if (carrinhoNumeros.size === 0) {
-                alert("Por favor, selecione pelo menos um número livre antes de confirmar.");
+                alert("Selecione pelo menos um número livre.");
                 return;
             }
 
-            const nome = prompt(`Foi selecionado um total de ${carrinhoNumeros.size} número(s).\nIntroduza o nome do comprador:`);
-            
+            const nome = prompt(`Venda de ${carrinhoNumeros.size} números.\nDigite o nome do comprador:`);
             if (nome && nome.trim() !== "") {
                 const nomeFinal = nome.trim();
-                const confirmacao = confirm(`Confirmar a reserva dos ${carrinhoNumeros.size} números selecionados para "${nomeFinal}"?`);
-                
-                if (confirmacao) {
-                    carrinhoNumeros.forEach(num => {
-                        rifaDados[num] = nomeFinal;
-                        
-                        // Atualiza graficamente cada card
-                        const card = document.getElementById(`num-${num}`);
-                        if (card) {
-                            card.className = "numero-card vendido";
-                            card.innerHTML = `
-                                <span>${formatarNumero(num)}</span>
-                                <span class="nome-comprador" title="${nomeFinal}">${nomeFinal}</span>
-                            `;
-                        }
-                    });
+                if (confirm(`Confirmar venda para "${nomeFinal}"?`)) {
+                    
+                    // Cria o lote de inserções para o banco
+                    const inserts = Array.from(carrinhoNumeros).map(num => ({
+                        numero: num,
+                        comprador: nomeFinal
+                    }));
 
-                    localStorage.setItem('rifa_5000_dados', JSON.stringify(rifaDados));
-                    limparCarrinho();
-                    toggleModoSelecao();
-                    atualizarEstatisticasERanking();
-                    alert("Venda realizada com sucesso!");
-                }
-            } else if (nome === "") {
-                alert("Erro: O nome não pode estar vazio.");
-            }
-        }
-
-        // --- SISTEMA E ESTRUTURA GERAL ---
-        function atualizarEstatisticasERanking() {
-            const vendidosArray = Object.values(rifaDados);
-            const totalVendidos = vendidosArray.length;
-            const totalDisponiveis = TOTAL_NUMEROS - totalVendidos;
-            
-            qtdVendidosSpan.textContent = totalVendidos;
-            qtdDisponivelSpan.textContent = totalDisponiveis;
-
-            // Calcula contagem individual para o Ranking
-            const contagem = {};
-            vendidosArray.forEach(nome => {
-                contagem[nome] = (contagem[nome] || 0) + 1;
-            });
-
-            const rankingOrdenado = Object.entries(contagem).sort((a, b) => b[1] - a[1]);
-
-            rankingLista.innerHTML = '';
-            if (rankingOrdenado.length === 0) {
-                rankingLista.innerHTML = '<li class="sem-dados">Nenhuma venda registada ainda.</li>';
-            } else {
-                rankingOrdenado.forEach(([nome, qtd], index) => {
-                    const item = document.createElement('li');
-                    let topClass = '';
-                    if (index === 0) topClass = 'top-1';
-                    else if (index === 1) topClass = 'top-2';
-                    else if (index === 2) topClass = 'top-3';
-
-                    item.className = `ranking-item ${topClass}`;
-                    item.innerHTML = `
-                        <div>
-                            <span class="posicao">${index + 1}°</span>
-                            <span class="nome" title="${nome}">${nome}</span>
-                        </div>
-                        <span class="qtd-badge">${qtd} ${qtd === 1 ? 'nº' : 'nºs'}</span>
-                    `;
-                    rankingLista.appendChild(item);
-                });
-            }
-        }
-
-        // Renderiza os 5000 números iniciais com foco em performance
-        function renderizarRifa() {
-            const fragment = document.createDocumentFragment();
-            
-            for (let i = 1; i <= TOTAL_NUMEROS; i++) {
-                const numeroFormatado = formatarNumero(i);
-                const card = document.createElement('div');
-                card.className = 'numero-card';
-                card.id = `num-${i}`;
-                
-                if (rifaDados[i]) {
-                    card.classList.add('vendido');
-                    card.innerHTML = `
-                        <span>${numeroFormatado}</span>
-                        <span class="nome-comprador" title="${rifaDados[i]}">${rifaDados[i]}</span>
-                    `;
-                } else {
-                    card.classList.add('disponivel');
-                    card.innerHTML = `<span>${numeroFormatado}</span>`;
-                }
-
-                card.addEventListener('click', () => gerenciarClique(i, numeroFormatado, card));
-                fragment.appendChild(card);
-            }
-            
-            grid.appendChild(fragment);
-            atualizarEstatisticasERanking();
-        }
-
-        // Gestão individual de cliques
-        function gerenciarClique(numero, formatado, card) {
-            const jaVendido = rifaDados[numero];
-
-            // Se o modo seleção múltipla estiver ativo
-            if (modoSelecaoAtivo) {
-                if (jaVendido) {
-                    alert("Este número já se encontra vendido. Se deseja libertá-lo, desative o modo Seleção Múltipla.");
-                    return;
-                }
-                toggleNumeroNoCarrinho(numero, card);
-                return;
-            }
-
-            // Caso de clique simples normal
-            if (jaVendido) {
-                // EXIGE SENHA DE SEGURANÇA PARA CANCELAR
-                const senhaDigitada = prompt(`O número ${formatado} está reservado para "${jaVendido}".\nPara CANCELAR esta venda e libertar o número, digite a senha de administrador:`);
-                
-                if (senhaDigitada === null) return; 
-
-                if (senhaDigitada === SENHA_CANCELAMENTO) {
-                    const confirmarLiberacao = confirm(`Deseja realmente tornar o número ${formatado} disponível novamente?`);
-                    if (confirmarLiberacao) {
-                        delete rifaDados[numero];
-                        salvarEAtualizarInterface(numero, formatado, false);
+                    const { error } = await supabase.from('rifas').insert(inserts);
+                    
+                    if (error) {
+                        alert("Ocorreu um erro. Alguns dos números selecionados podem ter sido comprados por outro vendedor no mesmo instante.");
+                    } else {
+                        limparCarrinho();
+                        toggleModoSelecao();
                     }
-                } else {
-                    alert("⚠️ Senha incorreta! Cancelamento abortado.");
-                }
-            } else {
-                // Reserva rápida de número único
-                const nome = prompt(`Digite o nome de quem está comprando o número ${formatado}:`);
-                
-                if (nome && nome.trim() !== "") {
-                    const confirmarVenda = confirm(`Confirmar a venda do número ${formatado} para "${nome.trim()}"?`);
-                    if (confirmarVenda) {
-                        rifaDados[numero] = nome.trim();
-                        salvarEAtualizarInterface(numero, formatado, true, nome.trim());
-                    }
-                } else if (nome === "") {
-                    alert("Por favor, introduza um nome válido.");
                 }
             }
         }
 
-        function salvarEAtualizarInterface(numero, formatado, isVendido, nome = "") {
-            localStorage.setItem('rifa_5000_dados', JSON.stringify(rifaDados));
-            const card = document.getElementById(`num-${numero}`);
-
-            if (isVendido) {
-                card.className = 'numero-card vendido';
-                card.innerHTML = `
-                    <span>${formatado}</span>
-                    <span class="nome-comprador" title="${nome}">${nome}</span>
-                `;
-            } else {
-                card.className = 'numero-card disponivel';
-                card.innerHTML = `<span>${formatado}</span>`;
-            }
-            atualizarEstatisticasERanking();
-        }
-
-        // Pesquisa rápida inteligente com scroll suave e feedback visual
+        // --- PESQUISA ---
         buscaInput.addEventListener('input', (e) => {
             const buscaValor = parseInt(e.target.value);
             if (buscaValor >= 1 && buscaValor <= TOTAL_NUMEROS) {
                 const elementoAlvo = document.getElementById(`num-${buscaValor}`);
                 if (elementoAlvo) {
                     elementoAlvo.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
                     elementoAlvo.style.outline = '4px solid #3498db';
                     elementoAlvo.style.zIndex = '10';
                     setTimeout(() => {
@@ -726,8 +736,8 @@
             }
         });
 
-        // Inicializa a aplicação
-        renderizarRifa();
+        // Iniciar
+        conectarAoBanco();
     </script>
 </body>
 </html>
