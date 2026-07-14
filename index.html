@@ -93,7 +93,7 @@
         .stat-box.disponivel { color: #27ae60; border-left: 4px solid #2ecc71; }
         .stat-box.vendido { color: #e74c3c; border-left: 4px solid #e74c3c; }
 
-        /* Painel de Controlos */
+        /* Painel de Controles */
         .controls-panel {
             background: #ffffff;
             border-radius: 16px;
@@ -433,14 +433,12 @@
 
     <script>
         // --- COLOQUE AS SUAS CREDENCIAIS DO SUPABASE AQUI ---
-        // CORRIGIDO: URL base do seu projeto sem o sufixo rest/v1/
         const SUPABASE_URL = "https://cnykqvqbujozzodmcxno.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_onW00z5AkVEJ9hnv8L9iQw_KD6GUd5I";
 
         const TOTAL_NUMEROS = 5000;
-        const SENHA_CANCELAMENTO = "1234"; // Altere sua senha se desejar
+        const SENHA_CANCELAMENTO = "1234";
 
-        // Inicializa o cliente do Supabase
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const grid = document.getElementById('grid');
@@ -456,7 +454,7 @@
         const contadorSelecao = document.getElementById('contador-selecao');
 
         // Estados Globais
-        let rifaDados = {}; // Sincronizado dinamicamente com o banco de dados
+        let rifaDados = {}; 
         let modoSelecaoAtivo = false;
         let carrinhoNumeros = new Set();
 
@@ -467,24 +465,19 @@
         // --- SISTEMA EM TEMPO REAL ---
         async function conectarAoBanco() {
             try {
-                // 1. Puxa os dados iniciais do banco
                 const { data, error } = await supabase.from('rifas').select('*');
                 if (error) throw error;
 
-                // Converte array do banco para o objeto que usamos localmente
                 data.forEach(item => {
                     rifaDados[item.numero] = item.comprador;
                 });
 
-                // Renderiza a grade completa com os dados iniciais
                 renderizarRifa();
                 atualizarEstatisticasERanking();
 
-                // Avisa que está online
                 connDot.className = "conn-dot online";
                 connText.textContent = "Online";
 
-                // 2. Cria conexão em tempo real (Escuta inserts e deletes no banco)
                 supabase
                     .channel('changes_rifa')
                     .on('postgres_changes', { event: '*', schema: 'public', table: 'rifas' }, payload => {
@@ -500,7 +493,6 @@
             }
         }
 
-        // Processa as atualizações que vêm da nuvem em tempo real
         function processarMudancaDoBanco(payload) {
             const { eventType, new: novoItem, old: itemAntigo } = payload;
 
@@ -514,33 +506,45 @@
             atualizarEstatisticasERanking();
         }
 
-        // --- INTERFACE E PERFORMANCE ---
+        // --- INTERFACE E PERFORMANCE (Renderização Otimizada) ---
         function renderizarRifa() {
             grid.innerHTML = '';
             const fragment = document.createDocumentFragment();
             
-            for (let i = 1; i <= TOTAL_NUMEROS; i++) {
-                const numeroFormatado = formatarNumero(i);
-                const card = document.createElement('div');
-                card.className = 'numero-card';
-                card.id = `num-${i}`;
-                
-                if (rifaDados[i]) {
-                    card.classList.add('vendido');
-                    card.innerHTML = `
-                        <span>${numeroFormatado}</span>
-                        <span class="nome-comprador" title="${rifaDados[i]}">${rifaDados[i]}</span>
-                    `;
-                } else {
-                    card.classList.add('disponivel');
-                    card.innerHTML = `<span>${numeroFormatado}</span>`;
+            // Chunk rendering de 500 em 500 elementos usando requestAnimationFrame
+            let i = 1;
+            function renderChunk() {
+                const limite = Math.min(i + 500, TOTAL_NUMEROS + 1);
+                for (; i < limite; i++) {
+                    const numeroFormatado = formatarNumero(i);
+                    const card = document.createElement('div');
+                    card.className = 'numero-card';
+                    card.id = `num-${i}`;
+                    
+                    if (rifaDados[i]) {
+                        card.classList.add('vendido');
+                        card.innerHTML = `
+                            <span>${numeroFormatado}</span>
+                            <span class="nome-comprador" title="${rifaDados[i]}">${rifaDados[i]}</span>
+                        `;
+                    } else {
+                        card.classList.add('disponivel');
+                        card.innerHTML = `<span>${numeroFormatado}</span>`;
+                    }
+
+                    const numCorrente = i;
+                    card.addEventListener('click', () => gerenciarClique(numCorrente, numeroFormatado, card));
+                    fragment.appendChild(card);
                 }
 
-                card.addEventListener('click', () => gerenciarClique(i, numeroFormatado, card));
-                fragment.appendChild(card);
+                grid.appendChild(fragment);
+
+                if (i <= TOTAL_NUMEROS) {
+                    requestAnimationFrame(renderChunk);
+                }
             }
             
-            grid.appendChild(fragment);
+            renderChunk();
         }
 
         function atualizarCardGraficamente(numero, isVendido, nome = "") {
@@ -631,7 +635,6 @@
 
                 if (senhaDigitada === SENHA_CANCELAMENTO) {
                     if (confirm(`Deseja realmente liberar o número ${formatado}?`)) {
-                        // Exclui do Supabase
                         const { error } = await supabase.from('rifas').delete().eq('numero', numero);
                         if (error) {
                             alert("Erro ao excluir no banco de dados.");
@@ -645,7 +648,6 @@
                 if (nome && nome.trim() !== "") {
                     const nomeFinal = nome.trim();
                     if (confirm(`Confirmar venda do ${formatado} para "${nomeFinal}"?`)) {
-                        // Insere no Supabase
                         const { error } = await supabase.from('rifas').insert([{ numero: numero, comprador: nomeFinal }]);
                         if (error) {
                             alert("Este número já pode ter sido comprado por outra pessoa agora mesmo! Recarregando...");
@@ -701,8 +703,6 @@
             if (nome && nome.trim() !== "") {
                 const nomeFinal = nome.trim();
                 if (confirm(`Confirmar venda para "${nomeFinal}"?`)) {
-                    
-                    // Cria o lote de inserções para o banco
                     const inserts = Array.from(carrinhoNumeros).map(num => ({
                         numero: num,
                         comprador: nomeFinal
@@ -739,10 +739,6 @@
 
         // Iniciar
         conectarAoBanco();
-    </script>
-</body>
-</html>
-       
     </script>
 </body>
 </html>
