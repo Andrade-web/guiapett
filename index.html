@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rifa Digital Multi-Vendedor (Tempo Real)</title>
+    <!-- CDN Oficial do Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
@@ -42,6 +43,23 @@
             color: #1a252f;
             font-size: 2.2rem;
             margin-bottom: 8px;
+        }
+
+        /* Estilo do Logotipo */
+        .logo-container {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-container img {
+            max-width: 180px; /* Largura máxima da logo */
+            max-height: 120px; /* Altura máxima da logo */
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.08)); /* Sombra suave */
         }
 
         /* Status da Conexão */
@@ -377,6 +395,11 @@
 
     <div class="container">
         <header>
+            <!-- Div do Logotipo (Basta substituir o src pela sua imagem) -->
+            <div class="logo-container">
+                <img src="https://via.placeholder.com/180x120?text=Sua+Logo+Aqui" alt="Logo da Rifa">
+            </div>
+
             <h1>Rifa Digital Multiusuário</h1>
             <div class="conn-status">
                 <div id="conn-dot" class="conn-dot"></div>
@@ -439,14 +462,13 @@
         const TOTAL_NUMEROS = 5000;
         const SENHA_CANCELAMENTO = "1234";
 
-        // Variável global para armazenar o cliente de conexão
         let supabaseClient = null;
 
-        // Verifica e inicializa o cliente de forma segura sem redeclarar 'supabase'
+        // Inicializa o cliente sem redeclarar a variável global 'supabase'
         if (window.supabase && typeof window.supabase.createClient === 'function') {
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         } else {
-            console.error("A biblioteca global do Supabase não pôde ser carregada.");
+            console.error("A biblioteca do Supabase não pôde ser carregada.");
         }
 
         const grid = document.getElementById('grid');
@@ -510,7 +532,6 @@
 
             } catch (err) {
                 console.error("Erro crítico na conexão:", err);
-                // Força renderização para o app não ficar travado em tela branca
                 renderizarRifa();
                 atualizarEstatisticasERanking();
                 connDot.className = "conn-dot";
@@ -675,7 +696,8 @@
             } else {
                 const nome = prompt(`Digite o nome do comprador do número ${formatado}:`);
                 if (nome && nome.trim() !== "") {
-                    const nomeFinal = nome.trim();
+                    // Transforma o nome digitado em LETRAS MAIÚSCULAS
+                    const nomeFinal = nome.trim().toUpperCase();
                     if (confirm(`Confirmar venda do ${formatado} para "${nomeFinal}"?`)) {
                         if (!supabaseClient) {
                             alert("Sem conexão ativa com o Supabase.");
@@ -683,7 +705,7 @@
                         }
                         const { error } = await supabaseClient.from('rifas').insert([{ numero: numero, comprador: nomeFinal }]);
                         if (error) {
-                           alert("Erro no Supabase: " + JSON.stringify(error));
+                            alert("Este número já pode ter sido comprado por outra pessoa agora mesmo! Recarregando...");
                         }
                     }
                 }
@@ -734,7 +756,8 @@
 
             const nome = prompt(`Venda de ${carrinhoNumeros.size} números.\nDigite o nome do comprador:`);
             if (nome && nome.trim() !== "") {
-                const nomeFinal = nome.trim();
+                // Transforma o nome digitado em LETRAS MAIÚSCULAS
+                const nomeFinal = nome.trim().toUpperCase();
                 if (confirm(`Confirmar venda para "${nomeFinal}"?`)) {
                     const inserts = Array.from(carrinhoNumeros).map(num => ({
                         numero: num,
