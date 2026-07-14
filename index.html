@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rifa Digital Multi-Vendedor (Tempo Real)</title>
+    <title>Controle de Rifas</title>
     <!-- CDN Oficial do Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -15,7 +15,7 @@
         }
 
         body {
-            background-color: #f0f3f8;
+            background-color: #e1ebfd;
             color: #2c3e50;
             padding: 20px;
             display: flex;
@@ -397,10 +397,10 @@
         <header>
             <!-- Div do Logotipo (Basta substituir o src pela sua imagem) -->
             <div class="logo-container">
-                <img src="https://via.placeholder.com/180x120?text=Sua+Logo+Aqui" alt="Logo da Rifa">
+                <img src="logopreta.png" alt="Logo da Rifa">
             </div>
 
-            <h1>Rifa Digital Multiusuário</h1>
+            <h1>CONTROLE DE RIFAS</h1>
             <div class="conn-status">
                 <div id="conn-dot" class="conn-dot"></div>
                 <span id="conn-text">Conectando...</span>
@@ -409,7 +409,8 @@
                 <div class="stat-box disponivel">Disponíveis: <span id="qtd-disponivel">5000</span></div>
                 <div class="stat-box vendido">Vendidos: <span id="qtd-vendidos">0</span></div>
             </div>
-            <p class="password-info">🔒 Senha padrão de cancelamento: <strong>1234</strong></p>
+            <p class="password-info">Cancelamento de número mediante <strong>Senha</strong></p>
+            <p class="password-info"> <strong>Vamos pra cimaaa !! </strong></p>
         </header>
 
         <div class="controls-panel">
@@ -427,16 +428,16 @@
 
             <div class="controls-row" style="justify-content: flex-end;">
                 <div>
-                    <button id="btn-modo-selecao" class="btn btn-primary" onclick="toggleModoSelecao()">🛒 Ativar Seleção Múltipla</button>
+                    <button id="btn-modo-selecao" class="btn btn-primary" onclick="toggleModoSelecao()"> Ativar Seleção Múltipla</button>
                 </div>
             </div>
 
             <div id="selection-bar" class="selection-bar">
                 <span style="font-weight: 600; color: #854d0e;">
-                    🛒 Modo Seleção Ativo: <span id="contador-selecao">0</span> número(s) escolhido(s).
+                     Modo Seleção Ativo: <span id="contador-selecao">0</span> número(s) escolhido(s).
                 </span>
                 <div class="btn-group" style="display: flex; gap: 10px;">
-                    <button class="btn btn-success" onclick="confirmarVendaMultipla()">Confirmar Compra</button>
+                    <button class="btn btn-success" onclick="confirmarVendaMultipla()">Confirmar Número</button>
                     <button class="btn btn-danger" onclick="toggleModoSelecao()">Cancelar</button>
                 </div>
             </div>
@@ -446,7 +447,7 @@
             <div class="rifa-grid" id="grid"></div>
 
             <aside class="ranking-panel">
-                <h2>🏆 Ranking de Compradores</h2>
+                <h2>🏆 Ranking de Vendedores</h2>
                 <ul class="ranking-lista" id="ranking-lista">
                     <li class="sem-dados">Buscando banco de dados...</li>
                 </ul>
@@ -627,7 +628,7 @@
 
             rankingLista.innerHTML = '';
             if (rankingOrdenado.length === 0) {
-                rankingLista.innerHTML = '<li class="sem-dados">Nenhuma venda registrada ainda.</li>';
+                rankingLista.innerHTML = '<li class="sem-dados">Ninguem vendeu ainda, vamos pra cima !!!.</li>';
             } else {
                 rankingOrdenado.forEach(([nome, qtd], index) => {
                     const item = document.createElement('li');
@@ -694,11 +695,11 @@
                     alert("⚠️ Senha incorreta!");
                 }
             } else {
-                const nome = prompt(`Digite o nome do comprador do número ${formatado}:`);
+                const nome = prompt(`Digite o nome do vendedor do número ${formatado}:`);
                 if (nome && nome.trim() !== "") {
                     // Transforma o nome digitado em LETRAS MAIÚSCULAS
                     const nomeFinal = nome.trim().toUpperCase();
-                    if (confirm(`Confirmar venda do ${formatado} para "${nomeFinal}"?`)) {
+                    if (confirm(`Confirmar número ${formatado} para "${nomeFinal}"?`)) {
                         if (!supabaseClient) {
                             alert("Sem conexão ativa com o Supabase.");
                             return;
@@ -722,7 +723,7 @@
                 btnModoSelecao.className = "btn btn-danger";
                 selectionBar.style.display = "flex";
             } else {
-                btnModoSelecao.textContent = "🛒 Ativar Seleção Múltipla";
+                btnModoSelecao.textContent = " Ativar Seleção Múltipla";
                 btnModoSelecao.className = "btn btn-primary";
                 selectionBar.style.display = "none";
             }
