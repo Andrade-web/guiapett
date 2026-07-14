@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rifa Digital Multi-Vendedor (Tempo Real)</title>
-    <!-- CDN atualizado e estável do Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
@@ -440,12 +439,14 @@
         const TOTAL_NUMEROS = 5000;
         const SENHA_CANCELAMENTO = "1234";
 
-        // Inicializa de forma segura verificando se a biblioteca foi carregada
-        let supabase;
-        if (window.supabase) {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Variável global para armazenar o cliente de conexão
+        let supabaseClient = null;
+
+        // Verifica e inicializa o cliente de forma segura sem redeclarar 'supabase'
+        if (window.supabase && typeof window.supabase.createClient === 'function') {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         } else {
-            console.error("A biblioteca do Supabase não pôde ser carregada.");
+            console.error("A biblioteca global do Supabase não pôde ser carregada.");
         }
 
         const grid = document.getElementById('grid');
@@ -469,16 +470,16 @@
             return String(num).padStart(4, '0');
         }
 
-        // --- SISTEMA EM TEMPO REAL COM CALLBACK DE SEGURANÇA ---
+        // --- SISTEMA EM TEMPO REAL ---
         async function conectarAoBanco() {
             try {
-                if (!supabase) throw new Error("Cliente Supabase não inicializado");
+                if (!supabaseClient) throw new Error("Cliente do Supabase não inicializado.");
 
-                // 1. Tenta carregar dados do banco de dados
-                const { data, error } = await supabase.from('rifas').select('*');
+                // 1. Tenta buscar os dados iniciais do banco
+                const { data, error } = await supabaseClient.from('rifas').select('*');
                 
                 if (error) {
-                    console.warn("Erro ao ler tabela do Supabase. Utilizando grade em modo local.", error);
+                    console.warn("Erro ao buscar dados do Supabase. Renderizando grade vazia localmente.", error);
                     renderizarRifa();
                     atualizarEstatisticasERanking();
                     connDot.className = "conn-dot";
@@ -492,15 +493,15 @@
                     });
                 }
 
-                // Renderiza a grade completa
+                // Renderiza a grade completa com os dados iniciais
                 renderizarRifa();
                 atualizarEstatisticasERanking();
 
                 connDot.className = "conn-dot online";
                 connText.textContent = "Online";
 
-                // 2. Cria conexão em tempo real (Escuta inserts e deletes no banco)
-                supabase
+                // 2. Conecta ao Realtime
+                supabaseClient
                     .channel('changes_rifa')
                     .on('postgres_changes', { event: '*', schema: 'public', table: 'rifas' }, payload => {
                         processarMudancaDoBanco(payload);
@@ -508,7 +509,8 @@
                     .subscribe();
 
             } catch (err) {
-                console.error("Erro crítico de conexão:", err);
+                console.error("Erro crítico na conexão:", err);
+                // Força renderização para o app não ficar travado em tela branca
                 renderizarRifa();
                 atualizarEstatisticasERanking();
                 connDot.className = "conn-dot";
@@ -516,7 +518,7 @@
             }
         }
 
-        // Processa as atualizações que vêm da nuvem em tempo real
+        // Processa atualizações em tempo real
         function processarMudancaDoBanco(payload) {
             const { eventType, new: novoItem, old: itemAntigo } = payload;
 
@@ -530,7 +532,7 @@
             atualizarEstatisticasERanking();
         }
 
-        // --- INTERFACE E PERFORMANCE (Renderização com fatiamento inteligente de quadros) ---
+        // --- INTERFACE E PERFORMANCE ---
         function renderizarRifa() {
             grid.innerHTML = '';
             const fragment = document.createDocumentFragment();
@@ -658,11 +660,11 @@
 
                 if (senhaDigitada === SENHA_CANCELAMENTO) {
                     if (confirm(`Deseja realmente liberar o número ${formatado}?`)) {
-                        if (!supabase) {
-                            alert("Não há conexão com o banco de dados.");
+                        if (!supabaseClient) {
+                            alert("Sem conexão ativa com o Supabase.");
                             return;
                         }
-                        const { error } = await supabase.from('rifas').delete().eq('numero', numero);
+                        const { error } = await supabaseClient.from('rifas').delete().eq('numero', numero);
                         if (error) {
                             alert("Erro ao excluir no banco de dados.");
                         }
@@ -675,11 +677,11 @@
                 if (nome && nome.trim() !== "") {
                     const nomeFinal = nome.trim();
                     if (confirm(`Confirmar venda do ${formatado} para "${nomeFinal}"?`)) {
-                        if (!supabase) {
-                            alert("Não há conexão com o banco de dados.");
+                        if (!supabaseClient) {
+                            alert("Sem conexão ativa com o Supabase.");
                             return;
                         }
-                        const { error } = await supabase.from('rifas').insert([{ numero: numero, comprador: nomeFinal }]);
+                        const { error } = await supabaseClient.from('rifas').insert([{ numero: numero, comprador: nomeFinal }]);
                         if (error) {
                             alert("Este número já pode ter sido comprado por outra pessoa agora mesmo! Recarregando...");
                         }
@@ -739,12 +741,11 @@
                         comprador: nomeFinal
                     }));
 
-                    if (!supabase) {
-                        alert("Não há conexão ativa com o banco de dados.");
+                    if (!supabaseClient) {
+                        alert("Sem conexão ativa com o Supabase.");
                         return;
                     }
-
-                    const { error } = await supabase.from('rifas').insert(inserts);
+                    const { error } = await supabaseClient.from('rifas').insert(inserts);
                     
                     if (error) {
                         alert("Ocorreu um erro. Alguns dos números selecionados podem ter sido comprados por outro vendedor no mesmo instante.");
@@ -773,16 +774,13 @@
             }
         });
 
-        // Executar inicialização quando o DOM estiver completamente pronto
+        // Iniciar somente após o carregamento completo do DOM
         window.addEventListener('DOMContentLoaded', () => {
-            if (supabase) {
+            if (supabaseClient) {
                 conectarAoBanco();
             } else {
-                // Modo offline de contingência imediata caso CDN ou biblioteca falhe
                 renderizarRifa();
                 atualizarEstatisticasERanking();
-                connDot.className = "conn-dot";
-                connText.textContent = "Erro de Biblioteca";
             }
         });
     </script>
