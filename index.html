@@ -683,7 +683,7 @@
                         }
                         const { error } = await supabaseClient.from('rifas').insert([{ numero: numero, comprador: nomeFinal }]);
                         if (error) {
-                            alert("Este número já pode ter sido comprado por outra pessoa agora mesmo! Recarregando...");
+                           alert("Erro no Supabase: " + JSON.stringify(error));
                         }
                     }
                 }
