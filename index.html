@@ -1,399 +1,286 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulado Direito de Família e Sucessões</title>
-<style>
-body{
-    font-family: Arial, sans-serif;
-    background:#f4f6f9;
-    margin:0;
-    padding:20px;
-}
-.container{
-    max-width:1000px;
-    margin:auto;
-    background:white;
-    padding:30px;
-    border-radius:10px;
-    box-shadow:0 0 15px rgba(0,0,0,.15);
-}
-h1{
-    text-align:center;
-    color:#003366;
-}
-.questao{
-    margin-bottom:25px;
-    padding:15px;
-    border-left:5px solid #003366;
-    background:#fafafa;
-}
-.alternativa{
-    margin:8px 0;
-}
-button{
-    background:#003366;
-    color:white;
-    border:none;
-    padding:15px 25px;
-    font-size:18px;
-    border-radius:8px;
-    cursor:pointer;
-}
-button:hover{
-    background:#0055aa;
-}
-#resultado{
-    margin-top:30px;
-    font-size:24px;
-    text-align:center;
-    font-weight:bold;
-}
-.acerto{
-    color:green;
-}
-.erro{
-    color:red;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rifa Digital - 5000 Números</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f9;
+            color: #333;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        header h1 {
+            color: #2c3e50;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        /* Painel de Estatísticas */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: #eef2f7;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        .stat-box.disponivel { color: #2ecc71; }
+        .stat-box.vendido { color: #e74c3c; }
+
+        /* Barra de Busca rápida */
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        .search-container input {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-container input:focus {
+            border-color: #3498db;
+        }
+
+        /* Grid de Números */
+        .rifa-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+            gap: 8px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 10px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            max-height: 65vh;
+            overflow-y: auto; /* Scroll interno para não travar a página */
+        }
+
+        /* Estilo de cada número (card) */
+        .numero-card {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            background-color: #fdfdfd;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            user-select: none;
+            padding: 5px;
+        }
+
+        .numero-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Estado: Disponível */
+        .numero-card.disponivel {
+            color: #2c3e50;
+            border-color: #bdc3c7;
+        }
+
+        /* Estado: Vendido */
+        .numero-card.vendido {
+            background-color: #e74c3c;
+            color: #fff;
+            border-color: #c0392b;
+        }
+
+        .numero-card .nome-comprador {
+            font-size: 0.65rem;
+            font-weight: normal;
+            margin-top: 4px;
+            text-align: center;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Responsividade */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            header h1 { font-size: 1.5rem; }
+            .rifa-grid { grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); }
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-<h1>Simulado - Direito de Família e Sucessões</h1>
-<form id="quiz"></form>
-<div style="text-align:center;">
-<button onclick="corrigir()">Finalizar Simulado</button>
-</div>
-<div id="resultado"></div>
-</div>
-<script>
-const questoes = [
-{
-pergunta:"1. A guarda compartilhada foi tornada regra pela:",
-opcoes:["Lei 13.146/2015","Lei 13.058/2014","Lei 12.010/2009","Lei 11.340/2006"],
-correta:1
-},
-{
-pergunta:"2. A tutela destina-se principalmente à proteção de:",
-opcoes:["Maiores incapazes","Menores sem poder familiar","Idosos","Pródigos"],
-correta:1
-},
-{
-pergunta:"3. A curatela protege:",
-opcoes:["Menores emancipados","Menores sob guarda","Maiores relativamente incapazes","Nascituros"],
-correta:2
-},
-{
-pergunta:"4. Atualmente são absolutamente incapazes:",
-opcoes:["Menores de 18 anos","Menores de 16 anos","Pródigos","Ébrios habituais"],
-correta:1
-},
-{
-pergunta:"5. A guarda unilateral é exercida por:",
-opcoes:["Ambos os pais","Um dos genitores","Juiz","Tutor"],
-correta:1
-},
-{
-pergunta:"6. A tutela testamentária é instituída por:",
-opcoes:["Juiz","MP","Ato de última vontade","Conselho Tutelar"],
-correta:2
-},
-{
-pergunta:"7. A tutela legítima segue ordem prevista no:",
-opcoes:["ECA","Constituição","Código Civil","CPC"],
-correta:2
-},
-{
-pergunta:"8. A tutela dativa é nomeada:",
-opcoes:["Pelos pais","Pelo juiz","Pelo MP","Pelo Conselho Tutelar"],
-correta:1
-},
-{
-pergunta:"9. O pródigo é considerado:",
-opcoes:["Absolutamente incapaz","Relativamente incapaz","Plenamente incapaz","Inexistente"],
-correta:1
-},
-{
-pergunta:"10. O processo de interdição está previsto no:",
-opcoes:["CP","CPP","CPC","CDC"],
-correta:2
-},
-{
-pergunta:"11. Quem pode promover a interdição?",
-opcoes:["Somente MP","Pais, tutores, cônjuge, parentes e MP","Somente juiz","Somente advogado"],
-correta:1
-},
-{
-pergunta:"12. A guarda compartilhada busca:",
-opcoes:["Interesse patrimonial","Interesse do menor","Interesse dos avós","Interesse do Estado"],
-correta:1
-},
-{
-pergunta:"13. O castigo físico foi vedado pela:",
-opcoes:["Lei da Palmada","Lei Maria da Penha","Lei do Divórcio","ECA"],
-correta:0
-},
-{
-pergunta:"14. A perda do poder familiar é medida:",
-opcoes:["Leve","Administrativa","Extrema","Automática"],
-correta:2
-},
-{
-pergunta:"15. A suspensão do poder familiar pode ser:",
-opcoes:["Irreversível","Restituída","Automática","Perpétua"],
-correta:1
-},
-{
-pergunta:"16. O tutor administra:",
-opcoes:["Somente a pessoa","Somente bens","Pessoa e bens do menor","Somente alimentos"],
-correta:2
-},
-{
-pergunta:"17. A curatela decorre normalmente de:",
-opcoes:["Adoção","Casamento","Interdição","Divórcio"],
-correta:2
-},
-{
-pergunta:"18. O testamento é ato:",
-opcoes:["Bilateral","Personalíssimo","Oneroso","Conjunto"],
-correta:1
-},
-{
-pergunta:"19. O testamento pode ser:",
-opcoes:["Irrevogável","Revogável","Condicionalmente irrevogável","Anônimo"],
-correta:1
-},
-{
-pergunta:"20. O recognition de filho em testamento é:",
-opcoes:["Revogável","Nulo","Irrevogável","Anulável"],
-correta:2
-},
-{
-pergunta:"21. O testamento conjuntivo é:",
-opcoes:["Permitido","Vedado","Recomendado","Obrigatório"],
-correta:1
-},
-{
-pergunta:"22. O testamento público é lavrado por:",
-opcoes:["Advogado","Promotor","Tabelião","Juiz"],
-correta:2
-},
-{
-pergunta:"23. O testamento público exige:",
-opcoes:["2 testemunhas","1 testemunha","5 testemunhas","Nenhuma"],
-correta:0
-},
-{
-pergunta:"24. O testamento cerrado é conhecido como:",
-opcoes:["Hológrafo","Místico","Conjuntivo","Codicilo"],
-correta:1
-},
-{
-pergunta:"25. O testamento particular é também chamado:",
-opcoes:["Místico","Conjunto","Hológrafo","Especial"],
-correta:2
-},
-{
-pergunta:"26. O testamento particular deve ser lido perante:",
-opcoes:["1 testemunha","2 testemunhas","3 testemunhas","Juiz"],
-correta:2
-},
-{
-pergunta:"27. O codicilo trata de:",
-opcoes:["Grande patrimônio","Pequena monta","Empresas","Imóveis obrigatoriamente"],
-correta:1
-},
-{
-pergunta:"28. A sucessão testamentária decorre de:",
-opcoes:["Lei","Testamento","Sentença","Contrato"],
-correta:1
-},
-{
-pergunta:"29. A sucessão legítima ocorre quando:",
-opcoes:["Há testamento válido","Não há testamento","Há legado","Há codicilo"],
-correta:1
-},
-{
-pergunta:"30. A legítima corresponde a:",
-opcoes:["25%","75%","50%","100%"],
-correta:2
-},
-{
-pergunta:"31. São herdeiros necessários:",
-opcoes:["Somente filhos","Descendentes, ascendentes e cônjuge","Somente cônjuge","Primos"],
-correta:1
-},
-{
-pergunta:"32. O testador pode dispor livremente de:",
-opcoes:["Toda herança","Metade disponível","Nada","25%"],
-correta:1
-},
-{
-pergunta:"33. A ordem de vocação hereditária inicia pelos:",
-opcoes:["Colaterais","Ascendentes","Descendentes","Estado"],
-correta:2
-},
-{
-pergunta:"34. O cônjuge sobrevivente é:",
-opcoes:["Herdeiro necessário","Legatário","Tutor","Curador"],
-correta:0
-},
-{
-pergunta:"35. O STF equiparou sucessão do companheiro ao:",
-opcoes:["Namoro","Casamento","Noivado","Parentesco"],
-correta:1
-},
-{
-pergunta:"36. O art. 1.846 trata da:",
-opcoes:["Curatela","Tutela","Legítima","Guarda"],
-correta:2
-},
-{
-pergunta:"37. A revogação do testamento pode ser:",
-opcoes:["Expressa ou tácita","Somente expressa","Somente judicial","Impossível"],
-correta:0
-},
-{
-pergunta:"38. O rompimento do testamento também é chamado de:",
-opcoes:["Nulidade","Revogação ficta","Caducidade","Anulação"],
-correta:1
-},
-{
-pergunta:"39. O testamento simultâneo beneficia:",
-opcoes:["Os próprios testadores","Terceiro alheio","Estado","Filhos"],
-correta:1
-},
-{
-pergunta:"40. O testamento recíproco beneficia:",
-opcoes:["Terceiro","Ambos os testadores","MP","Juiz"],
-correta:1
-},
-{
-pergunta:"41. O testamento correspectivo envolve:",
-opcoes:["Retribuição mútua","Doação","Compra e venda","Legado estatal"],
-correta:0
-},
-{
-pergunta:"42. Os testamentos simultâneo, recíproco e correspectivo são:",
-opcoes:["Permitidos","Vedados","Obrigatórios","Especiais"],
-correta:1
-},
-{
-pergunta:"43. A tomada de decisão apoiada foi fortalecida pelo:",
-opcoes:["ECA","EPD","CDC","CPP"],
-correta:1
-},
-{
-pergunta:"44. Pessoas com deficiência são consideradas:",
-opcoes:["Absolutamente incapazes","Relativamente incapazes","Plenamente capazes","Sempre interditadas"],
-correta:2
-},
-{
-pergunta:"45. A guarda olabilir:",
-opcoes:["Unilateral ou compartilhada","Somente compartilhada","Somente unilateral","Alternada obrigatória"],
-correta:0
-},
-{
-pergunta:"46. O tutor deve ser:",
-opcoes:["Menor","Capaz","Parente obrigatório","Casado"],
-correta:1
-},
-{
-pergunta:"47. O menor de 17 anos pode testar?",
-opcoes:["Não","Sim","Somente com autorização judicial","Somente casado"],
-correta:1
-},
-{
-pergunta:"48. O menor de 15 anos pode testar?",
-opcoes:["Sim","Não","Somente assistido","Somente por escritura"],
-correta:1
-},
-{
-pergunta:"49. O poder familiar extingue-se pela:",
-opcoes:["Maioridade","Emancipação","Morte","Todas as alternativas"],
-correta:3
-},
-{
-pergunta:"50. A principal finalidade da guarda é:",
-opcoes:["Proteção da pessoa do filho","Gestão empresarial","Administração estatal","Cobrança de alimentos"],
-correta:0
-}
-];
 
-const quiz = document.getElementById("quiz");
+    <header>
+        <h1>Rifa Digital - Controler de Vendas</h1>
+        <div class="stats">
+            <div class="stat-box disponivel">Disponíveis: <span id="qtd-disponivel">5000</span></div>
+            <div class="stat-box vendido">Vendidos: <span id="qtd-vendidos">0</span></div>
+        </div>
+    </header>
 
-// Renderiza o quiz adicionando IDs e classes dinâmicas
-questoes.forEach((q, i) => {
-    let html = `<div class="questao" id="bloco-q${i}"><p><strong>${q.pergunta}</strong></p>`;
-    q.opcoes.forEach((op, j) => {
-        html += `
-        <div class="alternativa" id="opt-${i}-${j}">
-            <label>
-                <input type="radio" name="q${i}" value="${j}">
-                ${op}
-            </label>
-        </div>`;
-    });
-    html += "</div>";
-    quiz.innerHTML += html;
-});
+    <div class="search-container">
+        <input type="number" id="busca" placeholder="Buscar número específico (ex: 1542)..." min="1" max="5000">
+    </div>
 
-function corrigir() {
-    let acertos = 0;
+    <div class="rifa-grid" id="grid"></div>
 
-    questoes.forEach((q, i) => {
-        let resposta = document.querySelector(`input[name="q${i}"]:checked`);
-        let blocoQuestao = document.getElementById(`bloco-q${i}`);
-        
-        // Destaca a alternativa correta em verde
-        let optCorreta = document.getElementById(`opt-${i}-${q.correta}`);
-        if (optCorreta) {
-            optCorreta.style.color = "green";
-            optCorreta.style.fontWeight = "bold";
-            optCorreta.innerHTML += " ✓ (Correta)";
+    <script>
+        const TOTAL_NUMEROS = 5000;
+        const grid = document.getElementById('grid');
+        const buscaInput = document.getElementById('busca');
+        const qtdDisponivelSpan = document.getElementById('qtd-disponivel');
+        const qtdVendidosSpan = document.getElementById('qtd-vendidos');
+
+        // Carrega dados salvos no navegador ou inicia um objeto vazio
+        let rifaDados = JSON.parse(localStorage.getItem('rifa_5000_dados')) || {};
+
+        // Formata o número com zeros à esquerda (ex: 0005, 0422, 4999)
+        function formatarNumero(num) {
+            return String(num).padStart(4, '0');
         }
 
-        if (resposta) {
-            let valorEscolhido = parseInt(resposta.value);
-            if (valorEscolhido === q.correta) {
-                acertos++;
-                blocoQuestao.style.borderLeft = "5px solid green";
-                blocoQuestao.style.background = "#eefbee";
+        // Atualiza o painel de estatísticas no topo
+        function atualizarEstatisticas() {
+            const totalVendidos = Object.keys(rifaDados).length;
+            const totalDisponiveis = TOTAL_NUMEROS - totalVendidos;
+            
+            qtdVendidosSpan.textContent = totalVendidos;
+            qtdDisponivelSpan.textContent = totalDisponiveis;
+        }
+
+        // Renderiza/Gera os 5000 números de forma extremamente otimizada
+        function renderizarRifa() {
+            const fragment = document.createDocumentFragment();
+            
+            for (let i = 1; i <= TOTAL_NUMEROS; i++) {
+                const numeroFormatado = formatarNumero(i);
+                const card = document.createElement('div');
+                card.className = 'numero-card';
+                card.id = `num-${i}`;
+                
+                // Verifica se já está vendido
+                if (rifaDados[i]) {
+                    card.classList.add('vendido');
+                    card.innerHTML = `
+                        <span>${numeroFormatado}</span>
+                        <span class="nome-comprador" title="${rifaDados[i]}">${rifaDados[i]}</span>
+                    `;
+                } else {
+                    card.classList.add('disponivel');
+                    card.innerHTML = `<span>${numeroFormatado}</span>`;
+                }
+
+                // Evento de clique para marcar/desmarcar
+                card.addEventListener('click', () => gerenciarClique(i, numeroFormatado));
+                
+                fragment.appendChild(card);
+            }
+            
+            grid.appendChild(fragment);
+            atualizarEstatisticas();
+        }
+
+        // Lógica de marcação e confirmação
+        function gerenciarClique(numero, formatado) {
+            const jaVendido = rifaDados[numero];
+
+            if (jaVendido) {
+                // Caso já esteja marcado, permite desmarcar/liberar o número
+                const confirmarLiberacao = confirm(`O número ${formatado} está marcado para "${jaVendido}". Deseja liberar este número e torná-lo disponível novamente?`);
+                if (confirmarLiberacao) {
+                    delete rifaDados[numero];
+                    salvarEAtualizarInterface(numero, formatado, false);
+                }
             } else {
-                // Se errou, destaca a errada escolhida em vermelho
-                blocoQuestao.style.borderLeft = "5px solid red";
-                blocoQuestao.style.background = "#fbeeee";
-                let optErrada = document.getElementById(`opt-${i}-${valorEscolhido}`);
-                if (optErrada) {
-                    optErrada.style.color = "red";
-                    optErrada.innerHTML += " ✗ (Sua escolha)";
+                // Caso esteja livre, pergunta o nome do comprador
+                const nome = prompt(`Digite o nome de quem está comprando o número ${formatado}:`);
+                
+                // Se o usuário digitou algo e não cancelou o prompt
+                if (nome && nome.trim() !== "") {
+                    const confirmarVenda = confirm(`Confirmar a venda do número ${formatado} para "${nome.trim()}"?`);
+                    if (confirmarVenda) {
+                        rifaDados[numero] = nome.trim();
+                        salvarEAtualizarInterface(numero, formatado, true, nome.trim());
+                    }
+                } else if (nome === "") {
+                    alert("Você precisa digitar um nome válido para marcar o número!");
                 }
             }
-        } else {
-            // Caso não tenha respondido
-            blocoQuestao.style.borderLeft = "5px solid orange";
-            blocoQuestao.style.background = "#fff9ee";
-            blocoQuestao.innerHTML += "<p style='color:orange; font-size:14px; margin:0;'>* Questão não respondida.</p>";
         }
-    });
 
-    // Desabilita os inputs para evitar alterações após o envio
-    document.querySelectorAll('input[type="radio"]').forEach(el => el.disabled = true);
-    document.querySelector('button[onclick="corrigir()"]').disabled = true;
+        // Atualiza o estado visual do botão clicado e salva no localStorage
+        function salvarEAtualizarInterface(numero, formatado, isVendido, nome = "") {
+            localStorage.setItem('rifa_5000_dados', JSON.stringify(rifaDados));
+            const card = document.getElementById(`num-${numero}`);
 
-    // Exibe o cabeçalho de resultado final
-    let porcentagem = ((acertos / questoes.length) * 100).toFixed(0);
-    document.getElementById("resultado").innerHTML = `
-        <p>Você acertou ${acertos} de ${questoes.length} questões.</p>
-        <p>Aproveitamento: ${porcentagem}%</p>
-        <button onclick="location.reload()">Refazer Simulado</button>
-    `;
-    
-    // Rola a tela de volta para o topo para que o usuário revise o gabarito desde a questão 1
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-</script>
-    
+            if (isVendido) {
+                card.className = 'numero-card vendido';
+                card.innerHTML = `
+                    <span>${formatado}</span>
+                    <span class="nome-comprador" title="${nome}">${nome}</span>
+                `;
+            } else {
+                card.className = 'numero-card disponível';
+                card.innerHTML = `<span>${formatado}</span>`;
+            }
+            atualizarEstatisticas();
+        }
+
+        // Sistema de busca e scroll suave até o número digitado
+        buscaInput.addEventListener('input', (e) => {
+            const buscaValor = parseInt(e.target.value);
+            if (buscaValor >= 1 && buscaValor <= TOTAL_NUMEROS) {
+                const elementoAlvo = document.getElementById(`num-${buscaValor}`);
+                if (elementoAlvo) {
+                    elementoAlvo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Destaque visual temporário piscando o elemento procurado
+                    elementoAlvo.style.outline = '4px solid #3498db';
+                    setTimeout(() => {
+                        elementoAlvo.style.outline = 'none';
+                    }, 2000);
+                }
+            }
+        });
+
+        // Inicializa a aplicação
+        renderizarRifa();
+    </script>
 </body>
 </html>
